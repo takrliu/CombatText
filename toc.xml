@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Addon Author="rliu" APIVersion="9" Name="CombatText" Description="">
+    <Script Name="CombatText.lua"/>
+    <Form Name="CombatTextPanel.xml"/>
+    <Form Name="CombatOptions.xml"/>
+    <ReplaceAddon Name="FloatText"/>
+</Addon>
