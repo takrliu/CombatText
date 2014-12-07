@@ -3,5 +3,8 @@
     <Script Name="CombatText.lua"/>
     <Form Name="CombatTextPanel.xml"/>
     <Form Name="CombatOptions.xml"/>
+    <Script Name="FloatTextPanel.lua"/>
+    <Form Name="FloatTextPanel.xml"/>
     <ReplaceAddon Name="FloatText"/>
+    <ReplaceAddon Name="FloatTextPanel"/>
 </Addon>

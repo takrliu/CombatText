@@ -184,6 +184,8 @@ function CombatText:OnLoad()
 	Apollo.RegisterEventHandler("CombatLogCCState", 						"OnCombatLogCCState", self)
 	Apollo.RegisterEventHandler("ActionBarNonSpellShortcutAddFailed", 		"OnActionBarNonSpellShortcutAddFailed", self)
 	Apollo.RegisterEventHandler("GenericEvent_GenericError",				"OnGenericError", self)
+	Apollo.RegisterEventHandler("QuestFloater", 							"OnQuestNotice", self)
+
 
 	-- set the max count of floater text
 	CombatFloater.SetMaxFloaterCount(500)
@@ -405,6 +407,34 @@ function CombatText:GetDefaultTextOption()
 		nDigitSpriteSpacing 		= 0,
 	}
 	return tTextOption
+end
+---------------------------------------------------------------------------------------------------
+local kstrSubPanelFont = "CRB_InterfaceLarge_B"
+local kstrSubPanelFontBacked = "CRB_InterfaceMedium"
+local kcrQuestFontColor = "ffffffff"
+local kcrPathFontColor = "ffff8000"
+local kcrBodyFontColor = "ffffffff"
+local kcrBodyFontColorBacked = "ff7fffb9"
+local kfFirstMessageDelay = 0.75 -- how long do we want to stall the first floater; gives them time to amass and clear other notices
+local kfFramerateRefreshRate = 0.1 -- how often do we update our framerate?
+function CombatText:OnQuestNotice(unitTarget, strMessage, questCurr) -- uses a ML window
+	Print "quest notice"
+	local strWeasel = String_GetWeaselString(Apollo.GetString("FloatText_QuestNotice"), strMessage)
+	local strFormatted = string.format("<P Font=\"%s\" Align=\"Center\" TextColor=\"%s\">%s</P>", kstrSubPanelFont, kcrBodyFontColor, strWeasel)
+
+	local bMatch = false
+	for idx, message in pairs(self.tQueueSub) do
+		if type(message) == "table" then
+			if questCurr ~= nil and message.iType == 1 and message.content ~= nil and questCurr:GetTitle() == message.content:GetTitle() then
+				bMatch = true
+				message.strMessage = strFormatted
+			end
+		end
+	end
+
+	if not bMatch then
+		self:AddToQueueSub(1, strFormatted, questCurr)
+	end
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -1483,17 +1513,13 @@ function CombatText:RequestShowTextFloater( eMessageType, unitTarget, strText, t
 	end
 end
 
+------------------------------------------------------------------
+function CombatText:OnDelayedFloatTextTimer()
+	local tParams = self.tDelayedFloatTextQueue:Pop()
+	Event_FireGenericEvent("Float_RequestShowTextFloater", tParams.eMessageType, tParams, tParams.tContent) -- TODO: Event!!!!
+end
 
---function CombatText:RequestShowTextFloater( eMessageType, unitTarget, strText, tTextOption, fDelay, tContent ) -- addtn'l parameters for XP/rep
---[[
-function CombatText:OnCombatLogTransference(tEventArgs)
-	local bCritical = tEventArgs.eCombatResult == GameLib.CodeEnumCombatResult.Critical
-	if tEventArgs.unitCaster == GameLib.GetControlledUnit() then -- Target does the transference to the source
-		self:OnDamageOrHealing( tEventArgs.unitCaster, tEventArgs.unitTarget, tEventArgs.eDamageType, math.abs(tEventArgs.nDamageAmount), math.abs(tEventArgs.nShield), math.abs(tEventArgs.nAbsorption), bCritical )
-	else -- creature taking damage
-		self:OnPlayerDamageOrHealing( tEventArgs.unitTarget, tEventArgs.eDamageType, math.abs(tEventArgs.nDamageAmount), math.abs(tEventArgs.nShield), math.abs(tEventArgs.nAbsorption), bCritical )
-	end
-]]
+
 function CombatText:OnShowFloatersClick( wndHandler, wndControl, eMouseButton )
 	-- modify the text to be shown
 	local tTextOption = self:GetDefaultTextOption()
@@ -1627,11 +1653,7 @@ function CombatText:OnAddonCatClick( wndHandler, wndControl, eMouseButton )
 	end
 end
 
-------------------------------------------------------------------
-function CombatText:OnDelayedFloatTextTimer()
-	local tParams = self.tDelayedFloatTextQueue:Pop()
-	Event_FireGenericEvent("Float_RequestShowTextFloater", tParams.eMessageType, tParams, tParams.tContent) -- TODO: Event!!!!
-end
+
 
 ---------------------------------------------------------------------------------------------------
 -- Controls Functions
