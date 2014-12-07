@@ -40,7 +40,6 @@ end
 function dec2cc(dec)
 	return Convert_String_To_CColor(dec2hex(dec))
 end
-<<<<<<< HEAD
 local OutWndRef, InWndRef, tcolor, GenWndRef
 
 local settings = {
@@ -48,14 +47,6 @@ local settings = {
 	velocity = "1",
 	eLocationTarget = "Top",
 	eLocationPlayer = "Bottom",
-=======
-local OutWndRef, InWndRef, tcolor
-
-local settings = {
-	general = {
-	velocity = "1",
-	moocolor = 0xf5a2ff,
->>>>>>> 806a980a9d3535449586a85ee76256ab8ee8963b
 	},
 	odb = {
 	fontscale = 1,
@@ -120,7 +111,6 @@ local submenudict = {
 	["HealControlsCrit"] = "Critical Heal",
 	["MoOControls"] = "MoO Damage",
 }
-<<<<<<< HEAD
 
 local elocationdict = {
 	["Top"] = CombatFloater.CodeEnumFloaterLocation.Top,
@@ -129,8 +119,6 @@ local elocationdict = {
 	["Back"] = CombatFloater.CodeEnumFloaterLocation.Back,
 	["Bottom"] = CombatFloater.CodeEnumFloaterLocation.Bottom,
 }
-=======
->>>>>>> 806a980a9d3535449586a85ee76256ab8ee8963b
 	
 local knTestingVulnerable = -1
 
@@ -248,14 +236,11 @@ function CombatText:OnDocLoaded()
 		local wndIncomingControls = Apollo.LoadForm(self.xmlDoc, "IncomingControlsList", wndOptionsControls, self)
 		RegisterOptions("Incoming", wndIncomingControls)
 		InWndRef = wndIncomingControls
-<<<<<<< HEAD
 		
 		local wndGeneralControls = Apollo.LoadForm(self.xmlDoc, "GeneralControlsList", wndOptionsControls, self)
 		RegisterOptions("General", wndGeneralControls, true)
 		GenWndRef = wndGeneralControls 
-
-=======
->>>>>>> 806a980a9d3535449586a85ee76256ab8ee8963b
+		
 		self:SetOptions()
 	
 		Apollo.RegisterEventHandler("CombatText_OpenOptions", "OnCombatText_OptionsOn", self)
@@ -268,13 +253,10 @@ function CombatText:OnDocLoaded()
 end
 
 function CombatText:SetOptions()
-<<<<<<< HEAD
 	
 	GenWndRef:FindChild("TargetFloaterLocation"):FindChild("DropDown"):SetText(settings.gen.eLocationTarget)
 	GenWndRef:FindChild("PlayerFloaterLocation"):FindChild("DropDown"):SetText(settings.gen.eLocationPlayer)
 	
-=======
->>>>>>> 806a980a9d3535449586a85ee76256ab8ee8963b
 	local odb = OutWndRef:FindChild("DamageControlsBase")
 	local odc = OutWndRef:FindChild("DamageControlsCrit")
 	local moo = OutWndRef:FindChild("MoOControls") --MoOControlsBase
@@ -382,7 +364,6 @@ function RegisterOptions(name, wndControls, bSingleTier)
 		wndCurr:Show(false, true)
 	end
 	
-	--Apollo.GetAddon("CombatText").tAddons[name] = wndControls
 	Apollo.GetAddon("CombatText").tAddons[name] = wndControls
 	
 	return true
@@ -392,14 +373,6 @@ function CombatText:OnCloseButtonClick( wndHandler, wndControl, eMouseButton )
 	self.wndOptions:Close()
 end
 
----------------------------------------------------------------------------------------------------
--- OptionsListItem Functions
----------------------------------------------------------------------------------------------------
-function CombatText:HideAllOptions()
-	for name, wndCurr in pairs(self.tAddons) do
-		wndCurr:Show(false, true)
-	end
-end
 
 function CombatText:GetDefaultTextOption()
 	local tTextOption =
@@ -1045,11 +1018,7 @@ function CombatText:OnDamageOrHealing( unitCaster, unitTarget, eDamageType, nDam
 		tTextOptionAbsorb.fScale = 1.0
 		tTextOptionAbsorb.fDuration = 2
 		tTextOptionAbsorb.eCollisionMode = CombatFloater.CodeEnumFloaterCollisionMode.IgnoreCollision --Horizontal
-<<<<<<< HEAD
 		tTextOptionAbsorb.eLocation = elocationdict[settings.gen.eLocationTarget]
-=======
-		tTextOptionAbsorb.eLocation = CombatFloater.CodeEnumFloaterLocation.Chest
->>>>>>> 806a980a9d3535449586a85ee76256ab8ee8963b
 		tTextOptionAbsorb.fOffset = -0.8
 		tTextOptionAbsorb.fOffsetDirection = 0
 		tTextOptionAbsorb.arFrames={}
@@ -1102,49 +1071,12 @@ function CombatText:OnDamageOrHealing( unitCaster, unitTarget, eDamageType, nDam
 		flashsize = 1
 		if bCritical then
 			nBaseColor = settings.odc.color
-<<<<<<< HEAD
 			fMaxSize = settings.odc.fontscale 
 			tTextOption.strFontFace = settings.odc.fontstyle
-=======
-			fMaxSize = settings.odb.fontscale 
-			tTextOption.strFontFace = settings.odb.fontstyle
->>>>>>> 806a980a9d3535449586a85ee76256ab8ee8963b
 			alpha = settings.odc.alpha
 			flashsize = 1.25
 		end
 	end
-<<<<<<< HEAD
-=======
-	
-	--[[
-	if not bHeal and bCritical == true then -- Crit not vuln
-		nBaseColor = settings.odc.color --0xfffb93--0xCC6600 --settings.odc.color
-		fMaxSize = settings.odc.fontscale
-		tTextOption.strFontFace = settings.odc.fontstyle
-		alpha = settings.odc.alpha
-		flashsize = 1.5
-	elseif not bHeal and (unitTarget:IsInCCState( Unit.CodeEnumCCState.Vulnerability ) or eDamageType == knTestingVulnerable ) then -- vuln not crit
-		nBaseColor = 0xf5a2ff --settings.general.moocolor --0xf5a2ff
-	else -- normal damage
-		if eDamageType == GameLib.CodeEnumDamageType.Heal then -- healing params
-			nBaseColor = bCritical and 0xcdffa0 or 0xb0ff6a
-			fMaxSize = bCritical and 0.9 or 0.7
-			alpha = settings.ohb.alpha
-			tTextOption.strFontFace = settings.ohb.fontstyle
-
-		elseif eDamageType == GameLib.CodeEnumDamageType.HealShields then -- healing shields params
-			nBaseColor = bCritical and 0xc9fffb or 0x6afff3
-			fMaxSize = bCritical and 0.9 or 0.7
-
-		else -- regular target damage params
-			nBaseColor = settings.odb.color --0xfffb93 --settings.ohb.color
-			tTextOption.strFontFace = settings.odb.fontstyle
-			alpha = settings.odb.alpha
-			flashsize = 1
-		end
-	end
-	]]
->>>>>>> 806a980a9d3535449586a85ee76256ab8ee8963b
 
 	-- determine offset direction; re-randomize if too close to the last
 	local nOffset = math.random(0, 0)
@@ -1156,28 +1088,11 @@ function CombatText:OnDamageOrHealing( unitCaster, unitTarget, eDamageType, nDam
 	tTextOption.fOffsetDirection = nOffset
 	tTextOption.fOffset = math.random(10, 30)/100
 	tTextOption.eCollisionMode = CombatFloater.CodeEnumFloaterCollisionMode.Horizontal
-<<<<<<< HEAD
 	tTextOption.eLocation = elocationdict[settings.gen.eLocationTarget]
 
 
 	-- scale and movement
 	-- different stages
-=======
-	tTextOption.eLocation = CombatFloater.CodeEnumFloaterLocation.Top
-
-	-- scale and movement
-	-- different stages
-	--[[
-	tTextOption.arFrames =
-	{
-		[1] = {fScale = (fMaxSize) * 1.75,	fTime = 0,									nColor = nBaseColor,},
-		[2] = {fScale = fMaxSize,			fTime = .15,			fAlpha = alpha,},		--nColor = nBaseColor,},
-		[3] = {fScale = fMaxSize,			fTime = .3,									nColor = nBaseColor,},
-		[4] = {fScale = fMaxSize,			fTime = .5,				fAlpha = alpha,},
-		[5] = {								fTime = fMaxDuration,	fAlpha = 0.0,},
-	}
-	]]
->>>>>>> 806a980a9d3535449586a85ee76256ab8ee8963b
 	nStallTime = .4
 	tTextOption.arFrames =
 	{
@@ -1232,11 +1147,7 @@ function CombatText:OnPlayerDamageOrHealing(unitPlayer, eDamageType, nDamage, nS
 	if type(nAbsorptionAmount) == "number" and nAbsorptionAmount > 0 then --absorption is its own separate type
 		tTextOptionAbsorb.nColor = 0xf8f3d7
 		tTextOptionAbsorb.eCollisionMode = CombatFloater.CodeEnumFloaterCollisionMode.Horizontal --Vertical--Horizontal  --IgnoreCollision
-<<<<<<< HEAD
 		tTextOptionAbsorb.eLocation = elocationdict[settings.gen.eLocationPlayer]
-=======
-		tTextOptionAbsorb.eLocation = CombatFloater.CodeEnumFloaterLocation.Chest
->>>>>>> 806a980a9d3535449586a85ee76256ab8ee8963b
 		tTextOptionAbsorb.fOffset = -0.4
 		tTextOptionAbsorb.fOffsetDirection = 0--125
 
@@ -1309,13 +1220,8 @@ function CombatText:OnPlayerDamageOrHealing(unitPlayer, eDamageType, nDamage, nS
 
 	tTextOptionAbsorb.fOffset = fOffsetAmount
 	tTextOption.eCollisionMode = eCollisionMode
-<<<<<<< HEAD
 	tTextOption.eLocation = elocationdict[settings.gen.eLocationPlayer]
 	
-=======
-	tTextOption.eLocation = CombatFloater.CodeEnumFloaterLocation.Chest
-
->>>>>>> 806a980a9d3535449586a85ee76256ab8ee8963b
 	-- scale and movement
 	tTextOption.arFrames =
 	{
@@ -1617,6 +1523,12 @@ end
 ---------------------------------------------------------------------------------------------------
 -- OptionsListItem Functions
 ---------------------------------------------------------------------------------------------------
+function CombatText:HideAllOptions()
+	for name, wndCurr in pairs(self.tAddons) do
+		wndCurr:Show(false, true)
+	end
+end
+
 function CombatText:OnOptionsHomeClick( wndHandler, wndControl, eMouseButton )
 	self:HideAllOptions()
 	self.wndOptions:FindChild("ListControls"):DestroyChildren()
@@ -1765,7 +1677,6 @@ local tFontStyleOptions = {
 
 }
 
-<<<<<<< HEAD
 local tFloaterLocations = {
 	["Top"] = "Top",
 	["Head"] = "Bottom",
@@ -1806,8 +1717,6 @@ function CombatText:test( wndHandler, wndControl, eMouseButton )
 	Print "test"
 end
 
-=======
->>>>>>> 806a980a9d3535449586a85ee76256ab8ee8963b
 ---------------------------------
 --		Outgoing Damage Controls Base
 ---------------------------------
@@ -2277,6 +2186,14 @@ function CombatText:OnRestore(level, profile)
 		settings.moo.color = tonumber(settings.moo.color,16)
 
 	end
+end
+
+---------------------------------------------------------------------------------------------------
+-- GeneralControlsList Functions
+---------------------------------------------------------------------------------------------------
+
+function CombatText:OnScrollListHide( wndHandler, wndControl )
+	Print (wndHandler:GetName())
 end
 
 local CombatTextInst = CombatText:new()
