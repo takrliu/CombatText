@@ -408,34 +408,7 @@ function CombatText:GetDefaultTextOption()
 	}
 	return tTextOption
 end
----------------------------------------------------------------------------------------------------
-local kstrSubPanelFont = "CRB_InterfaceLarge_B"
-local kstrSubPanelFontBacked = "CRB_InterfaceMedium"
-local kcrQuestFontColor = "ffffffff"
-local kcrPathFontColor = "ffff8000"
-local kcrBodyFontColor = "ffffffff"
-local kcrBodyFontColorBacked = "ff7fffb9"
-local kfFirstMessageDelay = 0.75 -- how long do we want to stall the first floater; gives them time to amass and clear other notices
-local kfFramerateRefreshRate = 0.1 -- how often do we update our framerate?
-function CombatText:OnQuestNotice(unitTarget, strMessage, questCurr) -- uses a ML window
-	Print "quest notice"
-	local strWeasel = String_GetWeaselString(Apollo.GetString("FloatText_QuestNotice"), strMessage)
-	local strFormatted = string.format("<P Font=\"%s\" Align=\"Center\" TextColor=\"%s\">%s</P>", kstrSubPanelFont, kcrBodyFontColor, strWeasel)
 
-	local bMatch = false
-	for idx, message in pairs(self.tQueueSub) do
-		if type(message) == "table" then
-			if questCurr ~= nil and message.iType == 1 and message.content ~= nil and questCurr:GetTitle() == message.content:GetTitle() then
-				bMatch = true
-				message.strMessage = strFormatted
-			end
-		end
-	end
-
-	if not bMatch then
-		self:AddToQueueSub(1, strFormatted, questCurr)
-	end
-end
 
 ---------------------------------------------------------------------------------------------------
 function CombatText:OnSpellCastFailed( eMessageType, eCastResult, unitTarget, unitSource, strMessage )
