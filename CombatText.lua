@@ -37,16 +37,25 @@ function dec2hex(IN)
     end
     return OUT
 end
+
 function dec2cc(dec)
 	return Convert_String_To_CColor(dec2hex(dec))
 end
+
+function round(num, idp)
+  local mult = 10^(idp or 0)
+  return math.floor(num * mult + 0.5) / mult
+end
+
 local OutWndRef, InWndRef, tcolor, GenWndRef
 
 local settings = {
 	gen = {
 	velocity = "1",
-	eLocationTarget = "Top",
+	eLocationTarget = "Bottom",
 	eLocationPlayer = "Bottom",
+	eLocationTarget_C = "Head",
+	eLocationPlayer_C = "Bottom",
 	},
 	odb = {
 	fontscale = 1,
@@ -256,8 +265,11 @@ end
 
 function CombatText:SetOptions()
 	
+	-- general location settings
 	GenWndRef:FindChild("TargetFloaterLocation"):FindChild("DropDown"):SetText(settings.gen.eLocationTarget)
 	GenWndRef:FindChild("PlayerFloaterLocation"):FindChild("DropDown"):SetText(settings.gen.eLocationPlayer)
+	GenWndRef:FindChild("TargetFloaterLocationCritical"):FindChild("DropDown"):SetText(settings.gen.eLocationTarget_C)
+	GenWndRef:FindChild("PlayerFloaterLocationCritical"):FindChild("DropDown"):SetText(settings.gen.eLocationPlayer_C)
 	
 	local odb = OutWndRef:FindChild("DamageControlsBase")
 	local odc = OutWndRef:FindChild("DamageControlsCrit")
@@ -414,6 +426,8 @@ end
 function CombatText:OnSpellCastFailed( eMessageType, eCastResult, unitTarget, unitSource, strMessage )
 	if unitTarget == nil or not Apollo.GetConsoleVariable("ui.showCombatFloater") then
 		return
+	else
+		return
 	end
 
 	-- modify the text to be shown
@@ -537,7 +551,7 @@ function CombatText:OnGenericFloater(unitTarget, strMessage)
 	tTextOption.strFontFace = "CRB_HeaderLarge_O"
 	tTextOption.bShowOnTop = true
 
-	CombatFloater.ShowTextFloater( unitTarget, strMessage, tTextOption )
+	CombatFloater.ShowTextFloater( unitTarget, strMessage, 0, tTextOption )
 end
 
 function CombatText:OnUnitEvaded(unitSource, unitTarget, eReason, strMessage)
@@ -559,7 +573,7 @@ function CombatText:OnUnitEvaded(unitSource, unitTarget, eReason, strMessage)
 		[4] = {fTime = 1.3,						fAlpha = 0.0,	fVelocityDirection = 0,},
 	}
 
-	CombatFloater.ShowTextFloater( unitSource, strMessage, tTextOption )
+	CombatFloater.ShowTextFloater( unitSource, strMessage, 0, tTextOption )
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -576,7 +590,7 @@ function CombatText:OnAlertTitle(strMessage)
 	tTextOption.fScale = 1
 	tTextOption.eLocation = CombatFloater.CodeEnumFloaterLocation.Top
 
-	CombatFloater.ShowTextFloater( GameLib.GetControlledUnit(), strMessage, tTextOption )
+	CombatFloater.ShowTextFloater( GameLib.GetControlledUnit(), strMessage, 0, tTextOption )
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -593,7 +607,7 @@ function CombatText:OnQuestShareFloater(unitTarget, strMessage)
 	tTextOption.fScale = 1
 	tTextOption.eLocation = CombatFloater.CodeEnumFloaterLocation.Top
 
-	CombatFloater.ShowTextFloater( unitTarget, strMessage, tTextOption )
+	CombatFloater.ShowTextFloater( unitTarget, strMessage, 0, tTextOption )
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -610,7 +624,7 @@ function CombatText:OnCountdownTick(strMessage)
 	tTextOption.fScale = 1
 	tTextOption.eLocation = CombatFloater.CodeEnumFloaterLocation.Top
 
-	CombatFloater.ShowTextFloater( GameLib.GetControlledUnit(), strMessage, tTextOption )
+	CombatFloater.ShowTextFloater( GameLib.GetControlledUnit(), strMessage, 0, tTextOption )
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -625,14 +639,14 @@ function CombatText:OnDeath()
 	tTextOption.eLocation = CombatFloater.CodeEnumFloaterLocation.Top
 	tTextOption.fOffset = 1
 
-	CombatFloater.ShowTextFloater( GameLib.GetControlledUnit(), Apollo.GetString("Player_Incapacitated"), tTextOption )
+	CombatFloater.ShowTextFloater( GameLib.GetControlledUnit(), Apollo.GetString("Player_Incapacitated"), 0, tTextOption )
 end
 
 ---------------------------------------------------------------------------------------------------
 function CombatText:OnCombatLogTransference(tEventArgs)
 	local bCritical = tEventArgs.eCombatResult == GameLib.CodeEnumCombatResult.Critical
 	if tEventArgs.unitCaster == GameLib.GetControlledUnit() then -- Target does the transference to the source
-		self:OnDamageOrHealing( tEventArgs.unitCaster, tEventArgs.unitTarget, tEventArgs.eDamageType, math.abs(tEventArgs.nDamageAmount), math.abs(tEventArgs.nShield), math.abs(tEventArgs.nAbsorption), bCritical )
+		self:OnDamageOrHealing( tEventArgs.unitCaster, tEventArgs.unitTarget, tEventArgs.eDamageType, math.abs(tEventArgs.nDamageAmount), math.abs(tEventArgs.nShield), math.abs(tEventArgs.nAbsorption), bCritical, tEventArgs )
 	else -- creature taking damage
 		self:OnPlayerDamageOrHealing( tEventArgs.unitTarget, tEventArgs.eDamageType, math.abs(tEventArgs.nDamageAmount), math.abs(tEventArgs.nShield), math.abs(tEventArgs.nAbsorption), bCritical )
 	end
@@ -643,7 +657,7 @@ function CombatText:OnCombatLogTransference(tEventArgs)
 		if tHeal.unitHealed == GameLib.GetPlayerUnit() then -- source recieves the transference from the taker
 			self:OnPlayerDamageOrHealing(tEventArgs.unitCaster, GameLib.CodeEnumDamageType.Heal, math.abs(tHeal.nHealAmount), 0, 0, bCritical )
 		else
-			self:OnDamageOrHealing(tEventArgs.unitCaster, tHeal.unitHealed, tEventArgs.eDamageType, math.abs(tHeal.nHealAmount), 0, 0, bCritical )
+			self:OnDamageOrHealing(tEventArgs.unitCaster, tHeal.unitHealed, tEventArgs.eDamageType, math.abs(tHeal.nHealAmount), 0, 0, bCritical, tEventArgs )
 		end
 	end
 end
@@ -699,7 +713,7 @@ function CombatText:OnCombatMomentum( eMomentumType, nCount, strText )
 		tTextOption.strFontFace = "CRB_FloaterHuge"
 	end
 
-	CombatFloater.ShowTextFloater(unitToAttachTo, strMessage, tTextOption)
+	CombatFloater.ShowTextFloater(unitToAttachTo, strMessage, 0, tTextOption)
 end
 
 function CombatText:OnExperienceGained(eReason, unitTarget, strText, fDelay, nAmount)
@@ -992,15 +1006,14 @@ function CombatText:OnMiss( unitCaster, unitTarget, eMissType )
 
 	-- display the text
 	local strText = (eMissType == GameLib.CodeEnumMissType.Dodge) and Apollo.GetString("CRB_Dodged") or Apollo.GetString("CRB_Blocked")
-	CombatFloater.ShowTextFloater( unitTarget, strText, tTextOption )
+	CombatFloater.ShowTextFloater( unitTarget, strText, 0, tTextOption )
 end
 
 ---------------------------------------------------------------------------------------------------
-function CombatText:OnDamageOrHealing( unitCaster, unitTarget, eDamageType, nDamage, nShieldDamaged, nAbsorptionAmount, bCritical )
+function CombatText:OnDamageOrHealing( unitCaster, unitTarget, eDamageType, nDamage, nShieldDamaged, nAbsorptionAmount, bCritical, tEventArgs )
 	if unitTarget == nil or not Apollo.GetConsoleVariable("ui.showCombatFloater") or nDamage == nil then
 		return
 	end
-
 
 	if GameLib.IsControlledUnit(unitTarget) or unitTarget == GameLib.GetPlayerMountUnit() or GameLib.IsControlledUnit(unitTarget:GetUnitOwner()) then
 		self:OnPlayerDamageOrHealing( unitTarget, eDamageType, nDamage, nShieldDamaged, nAbsorptionAmount, bCritical )
@@ -1049,12 +1062,14 @@ function CombatText:OnDamageOrHealing( unitCaster, unitTarget, eDamageType, nDam
 		fMaxSize = settings.ohb.fontscale
 		tTextOption.strFontFace = settings.ohb.fontstyle
 		alpha = settings.ohb.alpha
+		tTextOption.eLocation = elocationdict[settings.gen.eLocationTarget]
 		if bCritical then
 			nBaseColor = settings.ohc.color
 			fMaxSize = settings.ohc.fontscale
 			tTextOption.strFontFace = settings.ohc.fontstyle
 			alpha = settings.ohc.alpha
 			flashsize = 1.25
+			tTextOption.eLocation = elocationdict[settings.gen.eLocationTarget_C]
 		end
 	
 	elseif eDamageType == GameLib.CodeEnumDamageType.HealShields then
@@ -1072,12 +1087,14 @@ function CombatText:OnDamageOrHealing( unitCaster, unitTarget, eDamageType, nDam
 		tTextOption.strFontFace = settings.odb.fontstyle
 		alpha = settings.odb.alpha
 		flashsize = 1
+		tTextOption.eLocation = elocationdict[settings.gen.eLocationTarget]
 		if bCritical then
 			nBaseColor = settings.odc.color
 			fMaxSize = settings.odc.fontscale 
 			tTextOption.strFontFace = settings.odc.fontstyle
 			alpha = settings.odc.alpha
 			flashsize = 1.25
+			tTextOption.eLocation = elocationdict[settings.gen.eLocationTarget_C]
 		end
 	end
 
@@ -1087,43 +1104,52 @@ function CombatText:OnDamageOrHealing( unitCaster, unitTarget, eDamageType, nDam
 		nOffset = math.random(0, 0)
 	end
 	self.fLastOffset = nOffset
+	local velocityDirection= 45
+	if self.velocityDirection == 45 then
+		velocityDirection= 315
+	else
+		velocityDirection = 45
+	end
+	self.velocityDirection = velocityDirection
+	
 	-- set offset
-	tTextOption.fOffsetDirection = nOffset
-	tTextOption.fOffset = math.random(10, 30)/100
-	tTextOption.eCollisionMode = CombatFloater.CodeEnumFloaterCollisionMode.Horizontal
-	tTextOption.eLocation = elocationdict[settings.gen.eLocationTarget]
+	tTextOption.fOffsetDirection = 10
+	tTextOption.fOffset = math.random(10, 50)/100
 
-
+	tTextOption.bShowOnTop = true
+	--tTextOption.eLocation = elocationdict[settings.gen.eLocationTarget]
+	tTextOption.eCollisionMode = CombatFloater.CodeEnumFloaterCollisionMode.IgnoreCollision
 	-- scale and movement
 	-- different stages
-	nStallTime = .4
 	tTextOption.arFrames =
-	{
-	[1] = {fScale = fMaxSize * flashsize,			fTime = 0,						fAlpha = alpha,		nColor = nBaseColor,	fVelocityDirection = 0,		fVelocityMagnitude = 0,},
-	[2] = {fScale = fMaxSize * flashsize,			fTime = 0.1,										nColor = nBaseColor,	fVelocityDirection = 0,		fVelocityMagnitude = .5,},
-	[3] = {fScale = fMaxSize,						fTime = 0.3,					fAlpha = alpha,		nColor = nBaseColor,	fVelocityDirection = 0,		fVelocityMagnitude = 2,},
-	[4] = {											fTime = 0.5 + nStallTime,		fAlpha = alpha*.75,							fVelocityDirection = 0,		fVelocityMagnitude = 5,},
-	[5] = {											fTime = 0.0 + fMaxDuration,		fAlpha = 0.0,								fVelocityDirection = 0,		fVelocityMagnitude = 7,},
-	}
+		{
+		[1] = {fScale = fMaxSize * flashsize * 0.5, nColor = nBaseColor, fTime = 0,			fAlpha = alpha,		fVelocityDirection = velocityDirection,	fVelocityMagnitude = 5,	 },-- Default 0.8},
+		[2] = {fTime = 0.15,		fAlpha = alpha ,	fVelocityDirection = velocityDirection,	fVelocityMagnitude = .2, nColor = nBaseColor},
+		[3] = {fTime = 0.3,			fAlpha = alpha ,	fVelocityDirection = velocityDirection,	fVelocityMagnitude = .2},
+		[4] = {fTime = 1.0,	},
+		[5] = {fTime = 1.1,			fAlpha = alpha ,	fVelocityDirection 	= velocityDirection,	fVelocityMagnitude 	= 15,},
+		[6] = {fTime = 1.3 + fMaxDuration * 0.1,			fAlpha 	= alpha ,},
+		}
+		
 	if not bHeal then
 		self.fLastDamageTime = GameLib.GetGameTime()
 	end
 
 	if type(nAbsorptionAmount) == "number" and nAbsorptionAmount > 0 then -- secondary "if" so we don't see absorption and "0"
-		CombatFloater.ShowTextFloater( unitTarget, String_GetWeaselString(Apollo.GetString("FloatText_Absorbed"), nAbsorptionAmount), tTextOptionAbsorb )
+		CombatFloater.ShowTextFloater( unitTarget, String_GetWeaselString(Apollo.GetString("FloatText_Absorbed"), nAbsorptionAmount), 0, tTextOptionAbsorb )
 
 		if nTotalDamage > 0 then
 			tTextOption.eCollisionMode = CombatFloater.CodeEnumFloaterCollisionMode.Vertical
 			if bHeal then
-				CombatFloater.ShowTextFloater( unitTarget, String_GetWeaselString(Apollo.GetString("FloatText_PlusValue"), nTotalDamage), tTextOption )
+				CombatFloater.ShowTextFloater( unitTarget, String_GetWeaselString(Apollo.GetString("FloatText_PlusValue"), nTotalDamage), 0, tTextOption )
 			else
-				CombatFloater.ShowTextFloater( unitTarget, nTotalDamage, tTextOption )
+				CombatFloater.ShowTextFloater( unitTarget, nTotalDamage, nShieldDamaged, tTextOption )
 			end
 		end
 	elseif bHeal then
-		CombatFloater.ShowTextFloater( unitTarget, String_GetWeaselString(Apollo.GetString("FloatText_PlusValue"), nTotalDamage), tTextOption ) -- we show "0" when there's no absorption
+		CombatFloater.ShowTextFloater( unitTarget, String_GetWeaselString(Apollo.GetString("FloatText_PlusValue"), nTotalDamage), 0, tTextOption ) -- we show "0" when there's no absorption
 	else
-		CombatFloater.ShowTextFloater( unitTarget, nTotalDamage, tTextOption )
+		CombatFloater.ShowTextFloater( unitTarget, nTotalDamage, nShieldDamaged, tTextOption )
 	end
 end
 
@@ -1236,13 +1262,13 @@ function CombatText:OnPlayerDamageOrHealing(unitPlayer, eDamageType, nDamage, nS
 	}
 
 	if type(nAbsorptionAmount) == "number" and nAbsorptionAmount > 0 then -- secondary "if" so we don't see absorption and "0"
-		CombatFloater.ShowTextFloater( unitPlayer, String_GetWeaselString(Apollo.GetString("FloatText_Absorbed"), nAbsorptionAmount), tTextOptionAbsorb )
+		CombatFloater.ShowTextFloater( unitPlayer, String_GetWeaselString(Apollo.GetString("FloatText_Absorbed"), nAbsorptionAmount), 0, tTextOptionAbsorb )
 	end
 
 	if nDamage > 0 and bHeal then
-		CombatFloater.ShowTextFloater( unitPlayer, String_GetWeaselString(Apollo.GetString("FloatText_PlusValue"), nDamage), tTextOption )
-	elseif nDamage > 0 then
-		CombatFloater.ShowTextFloater( unitPlayer, nDamage, tTextOption )
+		CombatFloater.ShowTextFloater( unitPlayer, String_GetWeaselString(Apollo.GetString("FloatText_PlusValue"), nDamage), 0, tTextOption )
+	elseif not bHeal then
+		CombatFloater.ShowTextFloater( unitPlayer, nDamage, nShieldDamaged, tTextOption )
 	end
 end
 
@@ -1348,7 +1374,7 @@ function CombatText:OnCombatLogCCState(tEventArgs)
 		}
 	end
 
-	CombatFloater.ShowTextFloater( tEventArgs.unitTarget, strMessage, tTextOption )
+	CombatFloater.ShowTextFloater( tEventArgs.unitTarget, strMessage, 0, tTextOption )
 end
 
 ------------------------------------------------------------------
@@ -1445,7 +1471,7 @@ function CombatText:OnCombatLogCCStatePlayer(tEventArgs)
 		}
 	end
 
-	CombatFloater.ShowTextFloater( tEventArgs.unitTarget, strMessage, tTextOption )
+	CombatFloater.ShowTextFloater( tEventArgs.unitTarget, strMessage, 0, tTextOption )
 end
 
 ------------------------------------------------------------------
@@ -1516,7 +1542,7 @@ function CombatText:OnShowFloatersClick( wndHandler, wndControl, eMouseButton )
 		self:RequestShowTextFloater(LuaEnumMessageType.SpellCastError, unitSource, strMessage, tTextOption)
 	end
 	nDamage = 10
-	CombatFloater.ShowTextFloater( unitSource , nDamage, tTextOption )
+	CombatFloater.ShowTextFloater( unitSource , nDamage, 0, tTextOption )
 end
 
 ---------------------------------------------------------------------------------------------------
@@ -1707,6 +1733,28 @@ function CombatText:OnFloaterLocationPlayerClick_item(wndHandler, wndControl, eM
 	wndControl:GetParent():GetParent():Show(false)
 end
 
+-- CRITICAL
+function CombatText:OnFloaterLocationTargetClick_C( wndHandler, wndControl, eMouseButton )
+	CreateDropdownMenu(self, wndControl:GetParent(), tFloaterLocations, "OnFloaterLocationTargetClick_C_item")
+	wndControl:GetParent():FindChild("DropdownBox"):Show(true)
+end
+
+function CombatText:OnFloaterLocationTargetClick_C_item(wndHandler, wndControl, eMouseButton)
+	settings.gen.eLocationTarget_C= wndControl:GetText()
+	wndControl:GetParent():GetParent():GetParent():FindChild("DropDown"):SetText(wndControl:GetText())
+	wndControl:GetParent():GetParent():Show(false)
+end
+
+function CombatText:OnFloaterLocationPlayerClick_C( wndHandler, wndControl, eMouseButton )
+	CreateDropdownMenu(self, wndControl:GetParent(), tFloaterLocations, "OnFloaterLocationPlayerClick_C_item")
+	wndControl:GetParent():FindChild("DropdownBox"):Show(true)
+end
+
+function CombatText:OnFloaterLocationPlayerClick_C_item(wndHandler, wndControl, eMouseButton)
+	settings.gen.eLocationTarget_C= wndControl:GetText()
+	wndControl:GetParent():GetParent():GetParent():FindChild("DropDown"):SetText(wndControl:GetText())
+	wndControl:GetParent():GetParent():Show(false)
+end
 
 function CombatText:test( wndHandler, wndControl, eMouseButton )
 	Print "test"

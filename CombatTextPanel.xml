@@ -156,4 +156,5 @@
         </Control>
         <Pixie LAnchorPoint="0" LAnchorOffset="70" TAnchorPoint="0" TAnchorOffset="70" RAnchorPoint="1" RAnchorOffset="-70" BAnchorPoint="1" BAnchorOffset="-70" BGColor="UI_WindowBGDefault" Font="Default" TextColor="UI_WindowTextDefault" Text="" Sprite="BK3:UI_BK3_Holo_InsetSimple" Line="0"/>
     </Form>
+    <Form Class="Window" LAnchorPoint="0.5" LAnchorOffset="-256" TAnchorPoint="0.5" TAnchorOffset="0" RAnchorPoint="0.5" RAnchorOffset="256" BAnchorPoint="0.5" BAnchorOffset="256" RelativeToClient="1" Font="CRB_HeaderGigantic_O" Text="" Template="Default" TooltipType="OnCursor" Name="DamageDisplay" Border="0" Picture="1" SwallowMouseClicks="1" Moveable="0" Escapable="0" Overlapped="0" BGColor="UI_AlphaPercent60" TextColor="UI_TextHoloBodyHighlight" TooltipColor="" TextId="" IgnoreMouse="1" DT_VCENTER="1" DT_CENTER="1" Tooltip="" Sprite="HUD_HintArrow:UI_HUD_HintArrowBG"/>
 </Forms>
